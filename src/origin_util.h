@@ -17,15 +17,27 @@ struct OriginUtil {
   
   int GetAllImpactNode(vector<Node*> input_nodes);
   int GetImpactNode(Node* node);
-  int GraphVizOutput();
-
-  vector<Node*> res;
 
   State* state_;
   DiskInterface* disk_interface_;
   DyndepLoader dyndep_loader_;
   set<Node*> visited_nodes_;
   EdgeSet visited_edges_;
+
+private:
+  string VecNodeFmt(vector<Node*> inputs) {
+    string res = "";
+    if (0 == inputs.size())
+      return res;
+    else if (1 == inputs.size())
+      return inputs[0]->path();
+    else {
+      res += inputs[0]->path();
+      for (auto it = inputs.begin()+1; it < inputs.end(); ++it)
+        res += ", " + (*it)->path();
+      return res;
+    }
+  }
 };
 
 #endif // NINJA_ORIGIN_UTIL_H_

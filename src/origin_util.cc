@@ -9,11 +9,6 @@ int OriginUtil::GetAllImpactNode(vector<Node*> inputs) {
 }
 
 int OriginUtil::GetImpactNode(Node* node) {
-  // check this node whether is visited.
-  if (visited_nodes_.find(node) != visited_nodes_.end())
-    return 1;
-  visited_nodes_.insert(node);
-
   // if node is a leaf node, return directly.
   vector<Edge*> out_edges = node->GetOutEdges();
   if (0 == out_edges.size())
@@ -22,9 +17,22 @@ int OriginUtil::GetImpactNode(Node* node) {
   // for each out_edge, get their outputs node,
   // and call GetImpactNode recursively.
   for (auto edge : out_edges) {
+    // check whether edge is visited.
+    if (visited_edges_.find(edge) != visited_edges_.end())
+      continue;
+    visited_edges_.insert(edge);
+
+    vector<Node*> input_nodes = edge->inputs_;
     vector<Node*> output_nodes = edge->outputs_;
+    printf("rule_name: %s, ", edge->rule_->name_.c_str());
+    printf("explicit: %d, implicit: %d, order_only: %d ",
+            edge->explicit_deps_,
+            edge->implicit_deps_ - edge->explicit_deps_,
+            edge->order_only_deps_ - edge->implicit_deps_);
+    printf("%ld, %ld", input_nodes.size(), output_nodes.size());
+    printf("%s -> %s\n", VecNodeFmt(input_nodes).c_str(),
+                         VecNodeFmt(output_nodes).c_str());
     for (auto output_node : output_nodes) {
-      printf("%s -> %s\n", node->path().c_str(), output_node->path().c_str());
       GetImpactNode(output_node);
     }
   }
