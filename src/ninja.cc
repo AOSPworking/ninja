@@ -44,6 +44,7 @@
 #include "graphviz.h"
 #include "manifest_parser.h"
 #include "metrics.h"
+#include "origin_util.h"
 #include "state.h"
 #include "status.h"
 #include "thread_pool.h"
@@ -135,6 +136,7 @@ struct NinjaMain : public BuildLogUser {
   int ToolInputs(const Options* options, int argc, char* argv[]);
   int ToolQuery(const Options* options, int argc, char* argv[]);
   int ToolDeps(const Options* options, int argc, char* argv[]);
+  int ToolOrigin(const Options* options, int argc, char* argv[]);
   int ToolBrowse(const Options* options, int argc, char* argv[]);
   int ToolMSVC(const Options* options, int argc, char* argv[]);
   int ToolTargets(const Options* options, int argc, char* argv[]);
@@ -745,6 +747,25 @@ int NinjaMain::ToolDeps(const Options* options, int argc, char** argv) {
   return 0;
 }
 
+int NinjaMain::ToolOrigin(const Options* options, int argc, char* argv[]) {
+  vector<Node*> nodes;
+  string err;
+  if (!CollectTargetsFromArgs(argc, argv, &nodes, &err)) {
+    Error("%s", err.c_str());
+    return 1;
+  }
+
+  OriginUtil origin_util(&state_, &disk_interface_);
+
+  // for all the input argc target
+  origin_util.GetAllImpactNode(nodes);
+  for (auto it = origin_util.visited_nodes_.begin();
+            it != origin_util.visited_nodes_.end(); it++) {
+              printf("%s\n", (*it)->path().c_str());
+            }
+  return 0;
+}
+
 int NinjaMain::ToolTargets(const Options* options, int argc, char* argv[]) {
   int depth = 1;
   if (argc >= 1) {
@@ -1055,6 +1076,8 @@ const Tool* ChooseTool(const string& tool_name) {
       Tool::RUN_AFTER_LOAD, &NinjaMain::ToolCommands },
     { "deps", "show dependencies stored in the deps log",
       Tool::RUN_AFTER_LOGS, &NinjaMain::ToolDeps },
+    { "singdeps", "show only one layer dependencies in ninja manifest",
+      Tool::RUN_AFTER_LOAD, &NinjaMain::ToolOrigin },
     { "graph", "output graphviz dot file for targets",
       Tool::RUN_AFTER_LOAD, &NinjaMain::ToolGraph },
     { "inputs", "show all (recursive) inputs for a target",
