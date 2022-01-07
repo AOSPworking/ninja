@@ -16,33 +16,17 @@ int OriginUtil::GetImpactNode(Node* node) {
 
   // if node is a leaf node, return directly.
   vector<Edge*> out_edges = node->GetOutEdges();
-  if (0 == out_edges.size()) {
-    printf("leaf node: %s\n", node->path().c_str());
+  if (0 == out_edges.size())
     return 2;
-  }
 
   // for each out_edge, get their outputs node,
   // and call GetImpactNode recursively.
   for (auto edge : out_edges) {
     vector<Node*> output_nodes = edge->outputs_;
-    // check the edge whether is visited.
-    if (visited_edges_.find(edge) != visited_edges_.end())
-      continue;
-    visited_edges_.insert(edge);
-
-    for (auto node : output_nodes) {
-      GetImpactNode(node);
+    for (auto output_node : output_nodes) {
+      printf("%s -> %s\n", node->path().c_str(), output_node->path().c_str());
+      GetImpactNode(output_node);
     }
   }
-  return 0;
-}
-
-int OriginUtil::GraphVizOutput() {
-  GraphViz graph = GraphViz(state_, disk_interface_);
-  graph.Start();
-  for (auto it = visited_nodes_.begin(); it != visited_nodes_.end(); ++it) {
-    graph.AddTarget(*it);
-  }
-  graph.Finish();
   return 0;
 }

@@ -759,10 +759,6 @@ int NinjaMain::ToolOrigin(const Options* options, int argc, char* argv[]) {
 
   // for all the input argc target
   origin_util.GetAllImpactNode(nodes);
-  for (auto it = origin_util.visited_nodes_.begin();
-            it != origin_util.visited_nodes_.end(); it++) {
-              printf("%s\n", (*it)->path().c_str());
-            }
   return 0;
 }
 
