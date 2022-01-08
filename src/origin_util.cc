@@ -56,20 +56,21 @@ void OriginUtil::PrintJSON() {
     printf("\n");
   }
   printf("  ],\n");
-  printf("  \"edges\": [\n");
+  printf("  \"edges\": [");
+  bool has_edges = false;
   for (auto it = nodes_dist.begin(); it < nodes_dist.end(); ++it) {
     Edge* edge = (*it).first->in_edge();
     if (!edge || visited_edges_.find(edge) != visited_edges_.end())
       continue;
 
-    PrintEdge("    ", edge);
-    visited_edges_.insert(edge);
-
-    // 这里还有一些 bug，如果后面几个节点都没有 in_edge 或者 in_edge 曾经出现过，
-    // 那么这里可能就是最后一个 node。但是目前还是会打出 ","
-    if (it + 1 != nodes_dist.end())
+    // 先打印 "," 意思是只有存在下一个 edge 需要打印时，才打印 ","
+    if (has_edges && it + 1 != nodes_dist.end())
       printf(",");
     printf("\n");
+
+    has_edges = true;
+    PrintEdge("    ", edge);
+    visited_edges_.insert(edge);
   }
   printf("  ],\n");
   printf("  \"node_num\": %ld,\n", nodes_dist.size());
