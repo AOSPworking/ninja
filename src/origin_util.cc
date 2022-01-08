@@ -42,7 +42,7 @@ void OriginUtil::ReverseDijkstra() {
     nodes_dist.push_back({ it.first, it.second });
   using _pns = pair<Node*, size_t>;
   sort(nodes_dist.begin(), nodes_dist.end(), [](_pns a, _pns b) {
-      return a.second > b.second;
+      return a.second < b.second;
   });
 }
 
@@ -50,7 +50,7 @@ void OriginUtil::PrintJSON() {
   printf("{\n");
   printf("  \"nodes\": [\n");
   for (auto it = nodes_dist.begin(); it < nodes_dist.end(); ++it) {
-    printf("    \"%s\"", (*it).first->path().c_str());
+    PrintNode("    ", (*it).first, (*it).second);
     if (it + 1 != nodes_dist.end())
       printf(",");
     printf("\n");
@@ -64,7 +64,7 @@ void OriginUtil::PrintJSON() {
       continue;
 
     // 先打印 "," 意思是只有存在下一个 edge 需要打印时，才打印 ","
-    if (has_edges && it + 1 != nodes_dist.end())
+    if (has_edges && it != nodes_dist.end())
       printf(",");
     printf("\n");
 
@@ -72,11 +72,20 @@ void OriginUtil::PrintJSON() {
     PrintEdge("    ", edge);
     visited_edges_.insert(edge);
   }
+  // 补一个 \n，因为输出最后一个
+  printf("\n");
   printf("  ],\n");
   printf("  \"node_num\": %ld,\n", nodes_dist.size());
   printf("  \"edge_num\": %ld\n", visited_edges_.size());
   printf("}\n");
   return;
+}
+
+void OriginUtil::PrintNode(string indent, Node* node, size_t distance) {
+  printf("%s{", indent.c_str());
+  printf("\"name\": \"%s\", ", node->path().c_str());
+  printf("\"distance\": %ld", distance);
+  printf("}");
 }
 
 void OriginUtil::PrintEdge(string indent, Edge* edge) {

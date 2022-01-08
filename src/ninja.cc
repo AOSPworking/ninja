@@ -1072,7 +1072,7 @@ const Tool* ChooseTool(const string& tool_name) {
       Tool::RUN_AFTER_LOAD, &NinjaMain::ToolCommands },
     { "deps", "show dependencies stored in the deps log",
       Tool::RUN_AFTER_LOGS, &NinjaMain::ToolDeps },
-    { "singdeps", "show only one layer dependencies in ninja manifest",
+    { "origin", "show only one layer dependencies in ninja manifest",
       Tool::RUN_AFTER_LOAD, &NinjaMain::ToolOrigin },
     { "graph", "output graphviz dot file for targets",
       Tool::RUN_AFTER_LOAD, &NinjaMain::ToolGraph },

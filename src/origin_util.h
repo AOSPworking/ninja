@@ -32,6 +32,7 @@ struct OriginUtil {
   vector<pair<Node*, size_t>> nodes_dist;
   void ReverseDijkstra();
   void PrintJSON();
+  void PrintNode(string indent, Node* node, size_t distance);
   void PrintEdge(string indent, Edge* edge);
 
 private:
