@@ -13,21 +13,26 @@ struct Edge;
 struct State;
 
 struct OriginUtil {
-  OriginUtil(State* state, DiskInterface* disk_interface)
-      : state_(state), disk_interface_(disk_interface),
+  OriginUtil(vector<Node*> input_target, State* state,
+             DiskInterface* disk_interface)
+      : state_(state),
+        disk_interface_(disk_interface),
+        input_target_(input_target),
         dyndep_loader_(state, disk_interface) {}
   
-  int GetAllImpactNode(vector<Node*> input_nodes);
-  int GetImpactNode(Node* node);
-
   State* state_;
   DiskInterface* disk_interface_;
   DyndepLoader dyndep_loader_;
   set<Node*> visited_nodes_;
   EdgeSet visited_edges_;
 
+  vector<Node*> input_target_;
+  int GetAllImpactNode(vector<Node*> input_nodes);
+
   vector<pair<Node*, size_t>> nodes_dist;
-  void ReverseDijkstra(vector<Node*> input_nodes);
+  void ReverseDijkstra();
+  void PrintJSON();
+  void PrintEdge(string indent, Edge* edge);
 
 private:
   map<Node*, size_t> reverse_djk_m;
