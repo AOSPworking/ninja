@@ -2,9 +2,9 @@
 #include "graphviz.h"
 
 int OriginUtil::GetAllImpactNode() {
-  //ReverseDijkstra();
-  //PrintJSON();
   GetAllDirectNodes();
+  ReverseDijkstra();
+  PrintJSON();
 
   return 0;
 }
@@ -40,27 +40,27 @@ void OriginUtil::ReverseDijkstra() {
   for (auto node : input_target_) {
     q.push(node);
     reverse_djk_m.insert({ node, 1 });
+    ready_nodes_.insert(node);
   }
 
   while (!q.empty()) {
     Node* node = q.front();
     q.pop();
-    auto node_it = reverse_djk_m.find(node);
-    size_t dist = node_it->second;
 
     vector<Node*> output_nodes;
     GetOutputNodeByNode(node, &output_nodes);
     // 获取当前节点所有输出后，更新 map 中的距离
     for (auto node : output_nodes) {
-      auto iter = reverse_djk_m.find(node);
-      if (iter != reverse_djk_m.end() && iter->second < dist + 1) {
-        iter->second = dist + 1;
+      // 如果 target 节点并不是所有 source 都 ready 了，那就跳过
+      if (!AllSourcesReady(node)) {
+        continue;
       }
 
-      else if (iter == reverse_djk_m.end()) {
-        // 说明可以入 queue，因为 map 还没有记录过，说明是新节点
+      if (ready_nodes_.find(node) == ready_nodes_.end()) {
         q.push(node);
+        size_t dist = GetMaxDistanceByNode(node);
         reverse_djk_m.insert({ node, dist + 1 });
+        ready_nodes_.insert(node);
       }
     }
   }
