@@ -1,10 +1,37 @@
 #include "origin_util.h"
 #include "graphviz.h"
 
-int OriginUtil::GetAllImpactNode(vector<Node*> inputs) {
-  ReverseDijkstra();
-  PrintJSON();
+int OriginUtil::GetAllImpactNode() {
+  //ReverseDijkstra();
+  //PrintJSON();
+  GetAllDirectNodes();
+
   return 0;
+}
+
+/**
+ * @brief 获取所有直接影响的 Nodes，也就是 target 和 source 中的
+ */
+void OriginUtil::GetAllDirectNodes() {
+  queue<Node*> q;
+  for (auto node : input_target_) {
+    q.push(node);
+    direct_nodes_.push_back(node);
+  }
+
+  while (!q.empty()) {
+    Node* node = q.front();
+    q.pop();
+    
+    vector<Node*> output_nodes;
+    GetOutputNodeByNode(node, &output_nodes);
+    for (auto node : output_nodes) {
+      if (std::find(direct_nodes_.begin(), direct_nodes_.end(), node) == direct_nodes_.end()) {
+        q.push(node);
+        direct_nodes_.push_back(node);
+      }
+    }
+  }
 }
 
 void OriginUtil::ReverseDijkstra() {
@@ -26,8 +53,9 @@ void OriginUtil::ReverseDijkstra() {
     // 获取当前节点所有输出后，更新 map 中的距离
     for (auto node : output_nodes) {
       auto iter = reverse_djk_m.find(node);
-      if (iter != reverse_djk_m.end() && iter->second < dist + 1)
+      if (iter != reverse_djk_m.end() && iter->second < dist + 1) {
         iter->second = dist + 1;
+      }
 
       else if (iter == reverse_djk_m.end()) {
         // 说明可以入 queue，因为 map 还没有记录过，说明是新节点

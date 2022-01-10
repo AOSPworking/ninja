@@ -13,21 +13,17 @@ struct Edge;
 struct State;
 
 struct OriginUtil {
-  OriginUtil(vector<Node*> input_target, State* state,
-             DiskInterface* disk_interface)
-      : state_(state),
-        disk_interface_(disk_interface),
-        input_target_(input_target),
-        dyndep_loader_(state, disk_interface) {}
+  OriginUtil(vector<Node*> input_target)
+      : input_target_(input_target) {}
   
-  State* state_;
-  DiskInterface* disk_interface_;
-  DyndepLoader dyndep_loader_;
   set<Node*> visited_nodes_;
   EdgeSet visited_edges_;
 
   vector<Node*> input_target_;
-  int GetAllImpactNode(vector<Node*> input_nodes);
+  int GetAllImpactNode();
+
+  vector<Node*> direct_nodes_;
+  void GetAllDirectNodes();
 
   vector<pair<Node*, size_t>> nodes_dist;
   void ReverseDijkstra();
@@ -60,6 +56,16 @@ private:
                             edge_outputs.begin(), edge_outputs.end());
     }
     return;
+  }
+
+  bool AllInputNodesReady(Node* node) {
+    // 不在 visited_nodes_ 中就说明还没 ready
+    for (auto input : node->in_edge()->inputs_) {
+      if (visited_nodes_.find(input) != visited_nodes_.end()) {
+        return false;
+      }
+    }
+    return true;
   }
 };
 
