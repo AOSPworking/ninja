@@ -755,10 +755,10 @@ int NinjaMain::ToolOrigin(const Options* options, int argc, char* argv[]) {
     return 1;
   }
 
-  OriginUtil origin_util(nodes, &state_, &disk_interface_);
+  OriginUtil origin_util(nodes);
 
   // for all the input argc target
-  origin_util.GetAllImpactNode(nodes);
+  origin_util.GetAllImpactNode();
   return 0;
 }
 

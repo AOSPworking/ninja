@@ -13,21 +13,17 @@ struct Edge;
 struct State;
 
 struct OriginUtil {
-  OriginUtil(vector<Node*> input_target, State* state,
-             DiskInterface* disk_interface)
-      : state_(state),
-        disk_interface_(disk_interface),
-        input_target_(input_target),
-        dyndep_loader_(state, disk_interface) {}
+  OriginUtil(vector<Node*> input_target)
+      : input_target_(input_target) {}
   
-  State* state_;
-  DiskInterface* disk_interface_;
-  DyndepLoader dyndep_loader_;
-  set<Node*> visited_nodes_;
+  set<Node*> ready_nodes_;
   EdgeSet visited_edges_;
 
   vector<Node*> input_target_;
-  int GetAllImpactNode(vector<Node*> input_nodes);
+  int GetAllImpactNode();
+
+  vector<Node*> direct_nodes_;
+  void GetAllDirectNodes();
 
   vector<pair<Node*, size_t>> nodes_dist;
   void ReverseDijkstra();
@@ -60,6 +56,47 @@ private:
                             edge_outputs.begin(), edge_outputs.end());
     }
     return;
+  }
+
+  /**
+   * @brief 判断某节点的所有 “属于直接影响节点的输入节点” 是否 ready。
+   * 也就是 source 是否都 ready 了。
+   * @param node 某节点
+   * @return true ready
+   * @return false not ready
+   */
+  bool AllSourcesReady(Node* node) {
+    for (auto input : node->in_edge()->inputs_) {
+      // printf("node to test ready: %s, its input: %s\n", node->path().c_str(), input->path().c_str());
+      // input 不在 direct_nodes 中
+      if (std::find(direct_nodes_.begin(), direct_nodes_.end(), input) == direct_nodes_.end()) {
+        continue;
+      } else {
+        // 存在当前这个 input 不 ready
+        if (ready_nodes_.find(input) == ready_nodes_.end())
+          return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * @brief Get the Max Distance By Node object。
+   * 但是需要注意，只看当前 node 的所有 source input，impact 不看。
+   * @param node 某节点
+   * @return size_t 这个节点的 dist
+   */
+  size_t GetMaxDistanceByNode(Node* node) {
+    size_t max_dist = 0;
+    for (auto input : node->in_edge()->inputs_) {
+      if (std::find(direct_nodes_.begin(), direct_nodes_.end(), input) != direct_nodes_.end()) {
+        auto it = reverse_djk_m.find(input);
+        if (it != reverse_djk_m.end() && max_dist < it->second) {
+          max_dist = it->second;
+        }
+      }
+    }
+    return max_dist;
   }
 };
 
